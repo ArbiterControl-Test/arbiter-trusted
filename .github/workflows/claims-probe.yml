@@ -26,8 +26,7 @@ jobs:
             exit 0
           fi
           hdr="$(mktemp)"
-          printf 'Authorization: bearer %s
-' "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" > "$hdr"
+          printf 'Authorization: bearer %s\n' "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" > "$hdr"
           token="$(curl -fsS --max-time 30 -G --data-urlencode "audience=$PROBE_AUDIENCE" -H @"$hdr" --url "$ACTIONS_ID_TOKEN_REQUEST_URL" | python3 -I -c 'import json, sys; print(json.load(sys.stdin).get("value", ""))')" || token=""
           rm -f "$hdr"
           echo "::add-mask::$token"
