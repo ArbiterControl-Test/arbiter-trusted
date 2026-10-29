@@ -1,0 +1,28 @@
+# Arbiter trusted scans: the caller. PLAN-177-R7 change 5 (ARB-264).
+#
+# Put this file in each pilot repository at .github/workflows/arbiter-trusted-scans.yml, on its protected
+# default branch. Change only `acme/arbiter-trusted` (your trusted repository) and the two 40-character commit
+# shas (the trusted repository commit your policy pins). Never add steps, jobs, `with:`, `secrets:` or
+# `secrets: inherit`. This is the one allowed use of `pull_request_target`: GitHub runs it from the default
+# branch's copy, so a pull request cannot change it, and it runs for forks and Dependabot alike.
+#
+# On an `edited` event that did not change the base branch (a title or body edit), both jobs are skipped, so
+# nothing is posted and a stored result stands. A retarget runs a fresh scan, stored under the new base.
+
+name: Arbiter trusted scans
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  secret-scan:
+    if: github.event.action != 'edited' || github.event.changes.base.ref.from || github.event.changes.base.sha.from
+    uses: acme/arbiter-trusted/.github/workflows/secret-scan.yml@0000000000000000000000000000000000000000
+  dependency-check:
+    if: github.event.action != 'edited' || github.event.changes.base.ref.from || github.event.changes.base.sha.from
+    uses: acme/arbiter-trusted/.github/workflows/dependency-check.yml@0000000000000000000000000000000000000000

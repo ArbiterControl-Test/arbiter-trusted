@@ -1,0 +1,46 @@
+# PLAN-207-R4 § 4 (ARB-324): a test-only claims probe for the Arbiter live suite. It asks for a token with its own
+# audience (useless to Arbiter), masks it first, and prints eight claims and the pull request's head as one line.
+# It never posts to Arbiter and is in no policy. Synthetic fixture: no real code or data.
+name: Arbiter e2e claims probe
+
+on:
+  workflow_call: {}
+
+permissions:
+  id-token: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      id-token: write
+    steps:
+      - name: Claims
+        env:
+          PROBE_AUDIENCE: arbiter-e2e-claims-probe
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ] || [ -z "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" ]; then
+            python3 -I -c 'import json, os; print("ARBITER_E2E_CLAIMS " + json.dumps({"no_token": True, "pr_head": os.environ.get("PR_HEAD", "")}, sort_keys=True))'
+            exit 0
+          fi
+          hdr="$(mktemp)"
+          printf 'Authorization: bearer %s
+' "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" > "$hdr"
+          token="$(curl -fsS --max-time 30 -G --data-urlencode "audience=$PROBE_AUDIENCE" -H @"$hdr" --url "$ACTIONS_ID_TOKEN_REQUEST_URL" | python3 -I -c 'import json, sys; print(json.load(sys.stdin).get("value", ""))')" || token=""
+          rm -f "$hdr"
+          echo "::add-mask::$token"
+          if [ -z "$token" ]; then
+            python3 -I -c 'import json, os; print("ARBITER_E2E_CLAIMS " + json.dumps({"no_token": True, "pr_head": os.environ.get("PR_HEAD", "")}, sort_keys=True))'
+            exit 0
+          fi
+          printf '%s' "$token" | python3 -I -c '
+          import base64, json, os, sys
+          part = sys.stdin.read().split(".")[1]
+          claims = json.loads(base64.urlsafe_b64decode(part + "=" * (-len(part) % 4)))
+          keep = ["sha","ref","event_name","base_ref","job_workflow_ref","job_workflow_sha","run_id","runner_environment"]
+          out = {k: claims.get(k) for k in keep}
+          out["pr_head"] = os.environ.get("PR_HEAD", "")
+          print("ARBITER_E2E_CLAIMS " + json.dumps(out, sort_keys=True))
+          '
