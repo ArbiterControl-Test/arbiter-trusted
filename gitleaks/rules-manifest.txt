@@ -1,7 +1,7 @@
-# Reviewed rule manifest for the trusted secret scan (PLAN-177-R7 change 5, T18g).
+# Reviewed rule manifest for the trusted secret scan.
 # The built gitleaks config must have exactly these rule IDs: gitleaks 8.30.1's default rules
 # (gitleaks/gitleaks.toml, sha256 e163e53b9e7e8a8511e77271e2b323ed057759542a6d988258afe3a1fa329caf)
-# plus the UC4 test rule. secret-scan.yml pins the count and the sha256 of the ID list below
+# plus Arbiter's test-secret rule. secret-scan.yml pins the count and the sha256 of the ID list below
 # (one ID per line, sorted, each followed by a newline).
 # To bump gitleaks: copy the new default config here, review the rule changes, update this file,
 # then update the pins in secret-scan.yml (DEFAULT_CONFIG_SHA256, RULE_COUNT, RULE_IDS_SHA256).

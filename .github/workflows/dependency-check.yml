@@ -1,4 +1,4 @@
-# Arbiter trusted dependency check (UC3, check name `dependency-check`). PLAN-177-R7 change 5 (ARB-264).
+# Arbiter trusted dependency check (check name `dependency-check`).
 #
 # Keep this file in your separate, protected trusted repository, at .github/workflows/dependency-check.yml.
 # Your policy pins its commit; each pilot repository calls it from caller.yml. Read README.md first.

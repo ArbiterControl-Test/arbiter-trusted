@@ -1,4 +1,4 @@
-# Arbiter trusted scans: the caller. PLAN-177-R7 change 5 (ARB-264).
+# Arbiter trusted scans: the caller.
 #
 # Put this file in each pilot repository at .github/workflows/arbiter-trusted-scans.yml, on its protected
 # default branch. Change only `acme/arbiter-trusted` (your trusted repository) and the two 40-character commit
